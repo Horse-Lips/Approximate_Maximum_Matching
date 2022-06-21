@@ -31,7 +31,7 @@ public class Graph {
 
     /** Reduce all vertices to degree 3*/
     public void degreeReduction() {
-        System.out.println("Beginning degree reduction");
+        System.out.println("=== Degree Reduction ===");
         System.out.println("Initial graph size: " + this.getSize());
 
         for (int i = 0; i < this.vertList.size(); i++) {
@@ -66,6 +66,9 @@ public class Graph {
                 /* STEP 4: Add edges between u1, u2 and v2 */
                 u1.addToAdj(v2.getID(), 1);
                 u2.addToAdj(v2.getID(), 1);
+                
+                v2.addToAdj(u1.getID(), 1);
+                v2.addToAdj(u2.getID(), 1);
 
 
                 /** STEP 5: Add edge between v and v1 */
@@ -74,6 +77,49 @@ public class Graph {
             }
         }
 
-        System.out.println("Resulting graph size: " + this.getSize());
+        System.out.println("Resulting graph size: " + this.getSize() + "\n");
+    }
+
+    
+    /** Removes all 2-stars by reducing all k-stars to 1-stars */
+    public void kStarReduction() {
+        System.out.println("=== k-Star Removal ===");
+        System.out.println("Initial graph size: " + this.vertList.size());
+
+        ArrayList<Integer> toRemoveVert = new ArrayList<Integer>(); //List of vertices to remove from graph
+        ArrayList<Integer> toRemoveAdj  = new ArrayList<Integer>(); //List of vertices to remove from v's adj
+
+        for (int i = 0; i < this.vertList.size(); i++) {
+            Vertex v      = this.vertList.get(i);   //Get current vertex
+            int numDegOne = 0;                      //Number of degree 1 neighbours found
+
+            ArrayList<Integer> vAdj        = v.getAdj();    //Current vertex adjacency list
+            ArrayList<Integer> toRemoveAdj = new ArrayList<Integer>();  //List of vertex indices to remove from adj
+
+            for (Integer j: vAdj) {
+                if (this.vertList.get(j).getDegree() == 1) {
+                    if (numDegOne > 0) {
+                        numDegOne++;
+
+                        toRemoveAdj.add(j);
+                        toRemoveVert.add(j);
+
+                    } else {
+                        numDegOne++;
+
+                    }
+                }
+            }
+
+            for (Integer j: toRemoveAdj) {
+                v.removeFromAdj(j);
+            }
+        }
+
+        for (Integer j: toRemoveVert) {
+            this.vertList.remove(this.vertList.get(j));
+        }
+
+        System.out.println("Resulting graph size: " + this.vertList.size() + "\n");
     }
 }
