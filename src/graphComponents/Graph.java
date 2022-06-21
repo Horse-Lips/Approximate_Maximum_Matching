@@ -93,14 +93,12 @@ public class Graph {
             Vertex v      = this.vertList.get(i);   //Get current vertex
             int numDegOne = 0;                      //Number of degree 1 neighbours found
 
-            ArrayList<Integer> vAdj        = v.getAdj();    //Current vertex adjacency list
-            ArrayList<Integer> toRemoveAdj = new ArrayList<Integer>();  //List of vertex indices to remove from adj
+            ArrayList<Integer> vAdj = v.getAdj();               //Current vertex adjacency list
+            toRemoveAdj             = new ArrayList<Integer>(); //List of vertex indices to remove from adj
 
             for (Integer j: vAdj) {
                 if (this.vertList.get(j).getDegree() == 1) {
                     if (numDegOne > 0) {
-                        numDegOne++;
-
                         toRemoveAdj.add(j);
                         toRemoveVert.add(j);
 
