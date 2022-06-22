@@ -1,6 +1,10 @@
 package graphUtils;
 
 
+import java.util.Objects;
+import java.util.HashSet;
+
+
 public class SimpleTuple<X, Y> {
     private X item1;
     private Y item2;
@@ -45,7 +49,12 @@ public class SimpleTuple<X, Y> {
 
 	@Override
 	public int hashCode() {
-		return (Integer) this.getFirst() - (Integer) this.getSecond();
+		HashSet<Integer> h = new HashSet<Integer>();
+
+		h.add((int) this.getFirst());
+		h.add((int) this.getSecond());
+
+		return Objects.hash(h);
 	}
 
 

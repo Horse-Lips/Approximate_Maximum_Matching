@@ -125,12 +125,12 @@ public class Graph {
 
             if (neighb1.getDegree() < 3 || neighb2.getDegree() < 3) { continue; }
 			
-            SimpleTuple<Integer, Integer> token = new SimpleTuple<Integer, Integer>(neighb1.getID(), neighb2.getDegree());
+            SimpleTuple<Integer, Integer> token = new SimpleTuple<Integer, Integer>(neighb1.getID(), neighb2.getID());
 
             neighb1.setToken(token);
             neighb2.setToken(token);
 
-            if (neighb1.getToken(token) > 2) {
+            if (neighb1.getToken(token) > 2 && neighb2.getToken(token) > 2) {
                 neighb1.removeFromAdj(v);
                 neighb2.removeFromAdj(v);
 
