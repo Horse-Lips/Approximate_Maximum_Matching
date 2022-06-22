@@ -1,0 +1,3 @@
+#!/bin/bash
+
+javac -client main/Main.java graphComponents/Graph.java graphComponents/Vertex.java graphUtils/General.java graphUtils/SimpleTuple.java && java main.Main

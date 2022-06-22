@@ -59,7 +59,7 @@ public class General {
 			int weight = 1;
 			
 			if (from != to) {
-                newGraph.getVertex(from).addToAdj(to, weight);
+                newGraph.getVertex(from).addToAdj(newGraph.getVertex(to), weight);
 			}
 			
 		}

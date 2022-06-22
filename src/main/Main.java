@@ -8,10 +8,11 @@ import java.io.IOException;
 public class Main {
     
     public static void main(String[] args) throws IOException {
-        Graph g = General.fromSNAPFile("Graphs/3KAS.txt");
+        Graph g = General.fromSNAPFile("Graphs/200KGowalla.txt");
         
+		g.starReduction();
         g.degreeReduction();
-        g.kStarReduction();
+		
     }
 
 }

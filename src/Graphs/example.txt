@@ -1,0 +1,26 @@
+#Test graph containing a 3-star and 3-double-star
+
+# Nodes:10
+
+1	4
+2	4
+3	4
+4	1
+4	2
+4	3
+4	5
+5	4
+5	6
+5	7
+5	8
+6	5
+6	9
+7	5
+7	9
+8	5
+8	9
+9	6
+9	7
+9	8
+9	10
+10	9
