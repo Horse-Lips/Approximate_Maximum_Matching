@@ -1,10 +1,12 @@
 package main;
 
+
 import graphComponents.*;
 import graphUtils.*;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.HashSet;
+
 
 public class Main {
     
@@ -12,12 +14,7 @@ public class Main {
         Graph g = General.fromSNAPFile("Graphs/6KAS.txt");
         
 		g.starReduction();
-        //g.degreeReduction();
-		g.starReduction();
-		g.starReduction();
-		g.starReduction();
-		g.starReduction();
-		g.starReduction();
+		g.degreeReduction();
 		
     }
 

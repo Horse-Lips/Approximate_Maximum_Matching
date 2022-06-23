@@ -80,12 +80,6 @@ public class Vertex {
     }
 
 
-	/** Get all tokens (FOR TESTING) */
-	public HashMap<SimpleTuple, Integer> getTokens() {
-		return this.tokens;
-	}
-
-
     @Override
     public boolean equals(Object o) {
         if (o == this) {
@@ -105,48 +99,3 @@ public class Vertex {
         return false;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -5,11 +5,11 @@ import java.util.Objects;
 import java.util.HashSet;
 
 
-public class SimpleTuple<X, Y> {
+public class SimpleTuple<X> {
     private X item1;
-    private Y item2;
+    private X item2;
 
-    public SimpleTuple(X i1, Y i2) {
+    public SimpleTuple(X i1, X i2) {
         this.item1 = i1;
         this.item2 = i2;
     }
@@ -21,7 +21,7 @@ public class SimpleTuple<X, Y> {
 
 
     /** Return the second item in the tuple */
-    public Y getSecond() {
+    public X getSecond() {
         return this.item2;
     }
 
@@ -49,10 +49,10 @@ public class SimpleTuple<X, Y> {
 
 	@Override
 	public int hashCode() {
-		HashSet<Integer> h = new HashSet<Integer>();
+		HashSet<X> h = new HashSet<X>();
 
-		h.add((int) this.getFirst());
-		h.add((int) this.getSecond());
+		h.add(this.getFirst());
+		h.add(this.getSecond());
 
 		return Objects.hash(h);
 	}

@@ -8,7 +8,7 @@ import graphUtils.SimpleTuple;
 public class Graph {
 
     private ArrayList<Vertex> vertList;         //List of all Vertex objects in the graph
-    private int               currentVertID;   //Graph "size" used as vertex ID when creating new vertices (Required due to vertex removal)
+    private int               currentVertID;	//ID of next Vertex to be added to the graph
 
     public Graph(int graphSize) {
         this.vertList = new ArrayList<Vertex>();
@@ -32,10 +32,16 @@ public class Graph {
     }
 
 
+	/** Create an edge between the two given vertices */
+	public void createEdge(Vertex v1, Vertex v2) {
+		v1.addToAdj(v2, 1);
+		v2.addToAdj(v1, 1);
+	}
+
+
     /** Reduce all vertices to degree 3*/
     public void degreeReduction() {
-        System.out.println("=== Degree Reduction ===");
-        System.out.println("Initial graph size: " + this.getSize());
+        System.out.println("=== Degree Reduction ===\nInitial graph size: " + this.getSize());
 
 		ArrayList<Vertex> toAddVert = new ArrayList<Vertex>();
 
@@ -45,36 +51,25 @@ public class Graph {
                 Vertex v1 = new Vertex(this.currentVertID++);
                 Vertex v2 = new Vertex(this.currentVertID++);
 
-                /* Create edge between v1 and v2 */
-                v1.addToAdj(v2, 1);
-                v2.addToAdj(v1, 1);
+				this.createEdge(v1, v2);	//Create edge between v1 and v2
 
-                /* Add v1 and v2 to graph */
-				toAddVert.add(v1);
+				toAddVert.add(v1);			//Add v1 and v2 to graph
 				toAddVert.add(v2);
-
 
                 /* STEP 2: Get last two neighbours u1 and u2 of v and remove them from its adjacency list*/
                 Vertex u1 = v.removeFromAdj(v.getDegree() - 1);
                 Vertex u2 = v.removeFromAdj(v.getDegree() - 1);
 
-
                 /* STEP 3: Remove edges between u1, u2 and v */
                 u1.removeFromAdj(v);
                 u2.removeFromAdj(v);
 
-
                 /* STEP 4: Add edges between u1, u2 and v2 */
-                u1.addToAdj(v2, 1);
-                u2.addToAdj(v2, 1);
-                
-                v2.addToAdj(u1, 1);
-                v2.addToAdj(u2, 1);
-
+				this.createEdge(u1, v2);
+				this.createEdge(u2, v2);
 
                 /** STEP 5: Add edge between v and v1 */
-                v.addToAdj(v1, 1);
-                v1.addToAdj(v, 1);
+				this.createEdge(v, v1);
             }
         }
 		
@@ -86,107 +81,34 @@ public class Graph {
     
     /** Removes all 2-stars by reducing all k-stars to 1-stars */
     public void starReduction() {
-        System.out.println("=== k-Star Removal ===");
-        System.out.println("Initial graph size: " + this.vertList.size());
+        System.out.println("=== k-Star Removal ===\nInitial graph size: " + this.vertList.size());
 
-        ArrayList<Vertex> toRemoveVert = new ArrayList<Vertex>(); //List of vertices to remove from graph
+        ArrayList<Vertex> toRemoveVert = new ArrayList<Vertex>();	//List of vertices to remove from graph
+        for (Vertex v: this.vertList) { v.clearTokens(); }  		//Clear all tokens
 
-
-        for (Vertex v: this.vertList) { v.clearTokens(); }  //Clear all tokens
-
-
-        /* Collect all vertices of degree 1 contributing to k-stars with k > 1 */
         for (Vertex v: this.vertList) {
-            if (v.getDegree() != 1) { continue; }
-            
-            Vertex neighb = v.getAdj().get(0);
+			Vertex[] neighbs = {v.getAdj().get(0), v.getAdj().get(0)};	//Get first neighbour twice
 
-			if (neighb.getDegree() < 2) { continue; }
+			/* Ignore all non-2-stars and non-3-double-stars */
+			if (v.getDegree() == 1 && neighbs[0].getDegree() < 2) { continue; }
+			if (v.getDegree() == 2 && (neighbs[0].getDegree() < 3 || (neighbs[1] = v.getAdj().get(1)).getDegree() < 3)) { continue; }
+			if (v.getDegree() > 2) { continue; }
 
-			SimpleTuple<Integer, Integer> token = new SimpleTuple<Integer, Integer>(neighb.getID(), neighb.getID());
+			SimpleTuple<Vertex> token = new SimpleTuple<Vertex>(neighbs[0], neighbs[1]);  //Create token on neighbs
 
-			neighb.setToken(token);
+			for (Vertex neighb: neighbs) { neighb.setToken(token); }	//Pass token to neighbours
 
-            if (neighb.getToken(token) > 1) {
-                neighb.removeFromAdj(v);
-                toRemoveVert.add(v);
-            }
+			if (neighbs[0].getToken(token) > 2 && neighbs[1].getToken(token) > 2) {	//2-star/3-double-star exists
+				neighbs[0].removeFromAdj(v);	//Remove neighbour connections with v
+				neighbs[1].removeFromAdj(v);
+
+				toRemoveVert.add(v);			//Set v as to-be-removed
+			}
         }
 
-        for (Vertex v: this.vertList) { v.clearTokens(); }  //Clear all tokens
-
-
-		/* Collect all vertices of degree 2 contributing to k-double-stars with k > 2 */
-        for (Vertex v: this.vertList) {
-            if (v.getDegree() != 2) { continue; }
-
-            Vertex neighb1 = v.getAdj().get(0);
-            Vertex neighb2 = v.getAdj().get(1);
-
-            if (neighb1.getDegree() < 3 || neighb2.getDegree() < 3) { continue; }
-			
-            SimpleTuple<Integer, Integer> token = new SimpleTuple<Integer, Integer>(neighb1.getID(), neighb2.getID());
-
-            neighb1.setToken(token);
-            neighb2.setToken(token);
-
-            if (neighb1.getToken(token) > 2 && neighb2.getToken(token) > 2) {
-                neighb1.removeFromAdj(v);
-                neighb2.removeFromAdj(v);
-
-                toRemoveVert.add(v);
-            }
-        }
-
-        this.vertList.removeAll(toRemoveVert);
+        this.vertList.removeAll(toRemoveVert);	//Remove all vertices contributing to stars
 
         System.out.println("Resulting graph size: " + this.vertList.size() + "\n");
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
