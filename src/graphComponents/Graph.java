@@ -2,7 +2,9 @@ package graphComponents;
 
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import graphUtils.SimpleTuple;
+import graphUtils.SimpleQueuePrio;
 
 
 public class Graph {
@@ -39,6 +41,16 @@ public class Graph {
 	}
 
 
+	/** Helper function for grouping vertices*/
+	public void groupVertices(Vertex... verts) {
+		for (Vertex v: verts) {
+			for (Vertex u: verts) {
+				if (v != u) { v.addToGrouping(u); }
+			}
+		}
+	}
+
+
     /** Reduce all vertices to degree 3*/
     public void degreeReduction() {
         System.out.println("=== Degree Reduction ===\nInitial graph size: " + this.getSize());
@@ -51,9 +63,11 @@ public class Graph {
                 Vertex v1 = new Vertex(this.currentVertID++);
                 Vertex v2 = new Vertex(this.currentVertID++);
 
-				this.createEdge(v1, v2);	//Create edge between v1 and v2
+				this.groupVertices(v, v1, v2);	//Group vertices so max matchings are the same
 
-				toAddVert.add(v1);			//Add v1 and v2 to graph
+				this.createEdge(v1, v2);		//Create edge between v1 and v2
+
+				toAddVert.add(v1);				//Add v1 and v2 to graph
 				toAddVert.add(v2);
 
                 /* STEP 2: Get last two neighbours u1 and u2 of v and remove them from its adjacency list*/
@@ -111,4 +125,89 @@ public class Graph {
         System.out.println("Resulting graph size: " + this.vertList.size() + "\n");
     }
 
+
+	/** Check if degree reduction was successful (Max degree is 3) */
+	public void checkDegree() {
+		for (Vertex v: this.vertList) {
+			if (v.getDegree() > 3) {
+				System.out.println("Degree reduction unsuccessful!");
+			}
+		}
+	}
+
+
+	/** Separate the graph based on the planar separator theorem*/
+	public void separate() {
+		for (Vertex v: this.vertList) { v.setUnvisited(); }	//Mark all vertices as unvisited
+
+		Vertex start = this.vertList.get(0);	//Get start vertex
+		start.setVisited();						//Mark it as visited
+
+		int numVisited = 1;	//Count of visited vertices
+
+		ArrayList<ArrayList<Vertex>> distSets = new ArrayList<ArrayList<Vertex>>();
+		ArrayList<Vertex> currentNeighbours = start.getAdj();	//Get start vertex' neighbours
+
+		while (numVisited < this.getSize()) {
+			distSets.add(currentNeighbours);	//Add current neighbours (set l) to distSets
+			
+			for (Vertex v: currentNeighbours) { v.setVisited(); }
+			numVisited += currentNeighbours.size();
+
+			HashSet<Vertex> nextNeighbours = new HashSet<Vertex>();	//Collect neighbours of currentNeighbours
+
+			for (Vertex v: currentNeighbours) {
+				for (Vertex n: v.getAdj()) {
+					if (!n.getVisited()) { nextNeighbours.add(n); }
+				}
+			}
+
+			currentNeighbours = new ArrayList<Vertex>();
+			currentNeighbours.addAll(nextNeighbours);
+		}
+
+		for (ArrayList<Vertex> aV: distSets) { System.out.println(aV); }
+	}
+
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

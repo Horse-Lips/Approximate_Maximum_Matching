@@ -11,11 +11,12 @@ import java.util.HashSet;
 public class Main {
     
     public static void main(String[] args) throws IOException {
-        Graph g = General.fromSNAPFile("Graphs/6KAS.txt");
-        
-		g.starReduction();
-		g.degreeReduction();
-		
+        Graph g = General.fromSNAPFile("Graphs/example.txt");
+
+		//g.starReduction();
+		//g.degreeReduction();
+
+		g.separate();
     }
 
 }

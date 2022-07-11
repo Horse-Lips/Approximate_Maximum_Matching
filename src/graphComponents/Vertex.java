@@ -12,11 +12,16 @@ public class Vertex {
 
     ArrayList<Vertex>             adjListVert;  //List of all vertices adjacent to this one
     HashMap<SimpleTuple, Integer> tokens;       //Tokens received from other vertices (in star removal)
+	ArrayList<Vertex>			  grouping;		//Vertices that this vertex is grouped with after degree reduction
+
+	boolean visited;	//Mark vertex as visited in BFS or any search
 
     public Vertex(int vertID) {
         this.id          = vertID;
         this.adjListVert = new ArrayList<Vertex>();
         this.tokens      = new HashMap<SimpleTuple, Integer>();
+		this.grouping	 = new ArrayList<Vertex>();
+		this.visited	 = false;
     }
 
 
@@ -80,6 +85,30 @@ public class Vertex {
     }
 
 
+	/** Add a vertex to this vertex' gropuping */
+	public void addToGrouping(Vertex v) {
+		this.grouping.add(v);
+	}
+
+
+	/** Return whether or not this vertex has been visited */
+	public boolean getVisited() {
+		return this.visited;
+	}
+
+
+	/** Mark the vertex as visited */
+	public void setVisited() {
+		this.visited = true;
+	}
+
+
+	/** Mark the vertex as unvisited */
+	public void setUnvisited() {
+		this.visited = false;
+	}
+
+
     @Override
     public boolean equals(Object o) {
         if (o == this) {
@@ -98,4 +127,10 @@ public class Vertex {
 
         return false;
     }
+
+
+	@Override
+	public String toString() {
+		return Integer.toString(this.getID());
+	}
 }
