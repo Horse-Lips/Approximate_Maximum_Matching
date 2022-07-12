@@ -4,6 +4,7 @@ package graphComponents;
 import java.util.ArrayList;
 import java.util.HashSet;
 import graphUtils.SimpleTuple;
+import graphUtils.SimpleQueuePrio;
 
 
 public class Graph {
@@ -144,11 +145,11 @@ public class Graph {
 
 		int numVisited = 1;	//Count of visited vertices
 
-		ArrayList<ArrayList<Vertex>> distSets = new ArrayList<ArrayList<Vertex>>();
+		SimpleQueuePrio<ArrayList<Vertex>> distSets = new SimpleQueuePrio<ArrayList<Vertex>>();
 		ArrayList<Vertex> currentNeighbours = start.getAdj();	//Get start vertex' neighbours
 
 		while (numVisited < this.getSize()) {
-			distSets.add(currentNeighbours);	//Add current neighbours (set l) to distSets
+			distSets.insert(currentNeighbours, currentNeighbours.size());
 			
 			for (Vertex v: currentNeighbours) { v.setVisited(); }
 			numVisited += currentNeighbours.size();
@@ -164,8 +165,49 @@ public class Graph {
 			currentNeighbours = new ArrayList<Vertex>();
 			currentNeighbours.addAll(nextNeighbours);
 		}
+		
+		float totalCost = 0;	//Total set costs used for finding l1
+		int k = 0;				//Number of vertices in sets 0 through l1
 
-		for (ArrayList<Vertex> aV: distSets) { System.out.println(aV); }
+		ArrayList<Vertex> L0 = new ArrayList<Vertex>();
+		ArrayList<Vertex> L1 = new ArrayList<Vertex>();
+		ArrayList<Vertex> L2 = new ArrayList<Vertex>();
+
+		SimpleQueuePrio<ArrayList<Vertex>> setsUnderL1 = new SimpleQueuePrio<ArrayList<Vertex>>();
+
+		while (!distSets.isEmpty()) {
+			ArrayList<Vertex> currentSet = distSets.pop();
+			float setCost = (float) currentSet.size() / (float) this.vertList.size();
+
+			totalCost += setCost;
+			k         += currentSet.size();
+
+			if (totalCost > 0.5) { L1 = currentSet; break; }
+
+			setsUnderL1.insert(currentSet);
+		}
+
+		while (!setsUnderL1.isEmpty()) {
+			ArrayList<Vertex> currentSet = setsUnderL1.pop();
+
+			float L1Cost = L1.size()         / this.vertList.size();
+			float L0Cost = currentSet.size() / this.vertList.size();
+
+			if (currentSet.size() + (2 * (L1Cost - L0Cost)) <= 2 * Math.sqrt(k)) {L0 = currentSet; break; }
+		}
+
+		while (!distSets.isEmpty()) {
+			ArrayList<Vertex> currentSet = distSets.pop();
+			
+			float L1Cost = L1.size()         / this.vertList.size();
+			float L2Cost = currentSet.size() / this.vertList.size();
+
+			if (currentSet.size() + (2 * (L2Cost - L1Cost - 1)) <= 2 * Math.sqrt(this.vertList.size() - k)) { L2 = currentSet; break; }
+		}
+
+		System.out.println("L0: " + L0);
+		System.out.println("L1: " + L1);
+		System.out.println("L2: " + L2);
 	}
 
 
