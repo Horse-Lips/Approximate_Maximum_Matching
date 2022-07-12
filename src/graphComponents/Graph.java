@@ -4,7 +4,6 @@ package graphComponents;
 import java.util.ArrayList;
 import java.util.HashSet;
 import graphUtils.SimpleTuple;
-import graphUtils.SimpleQueuePrio;
 
 
 public class Graph {
