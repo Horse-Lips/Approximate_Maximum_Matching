@@ -256,9 +256,9 @@ public class Graph {
 		System.out.println("C: " + C);
 
 		System.out.println("Graph size: " + this.vertList.size());
-		System.out.println("A size: " + A.size());
-		System.out.println("B size: " + B.size());
-		System.out.println("C size: " + C.size());
+		System.out.println("A size: " + ((float) A.size() / (float) this.getSize()));
+		System.out.println("B size: " + ((float) B.size() / (float) this.getSize()));
+		System.out.println("C size: " + ((float) C.size() / (float) this.getSize()));
 	}
 
 }
