@@ -42,7 +42,7 @@ public class Graph {
 
 
 	/** Helper function for grouping vertices*/
-	public void groupVertices(Vertex... verts) {
+	public void groupVertices(ArrayList<Vertex> verts) {
 		for (Vertex v: verts) {
 			for (Vertex u: verts) {
 				if (v != u) { v.addToGrouping(u); }
@@ -58,12 +58,16 @@ public class Graph {
 		ArrayList<Vertex> toAddVert = new ArrayList<Vertex>();
 
         for (Vertex v: this.vertList) {
+			ArrayList<Vertex> grouping = new ArrayList<Vertex>();
+			grouping.add(v);
+
             while (v.getDegree() > 3) {
                 /* STEP 1: Create vertices v1 and v2 */
                 Vertex v1 = new Vertex(this.currentVertID++);
                 Vertex v2 = new Vertex(this.currentVertID++);
 
-				this.groupVertices(v, v1, v2);	//Group vertices so max matchings are the same
+				grouping.add(v1);	//Group vertices so matchings are the same
+				grouping.add(v2);
 
 				this.createEdge(v1, v2);		//Create edge between v1 and v2
 
@@ -85,6 +89,8 @@ public class Graph {
                 /** STEP 5: Add edge between v and v1 */
 				this.createEdge(v, v1);
             }
+
+			groupVertices(grouping);
         }
 		
 		this.vertList.addAll(toAddVert);
@@ -133,132 +139,6 @@ public class Graph {
 				System.out.println("Degree reduction unsuccessful!");
 			}
 		}
-	}
-
-
-
-	/** Separate the graph based on the planar separator theorem */
-	public void separate() {
-		for (Vertex v: this.vertList) { v.setUnvisited(); }	//Mark all vertices as unvisted
-
-		Vertex start = this.vertList.get(0);	//Get start vertex
-		start.setVisited();						//Mark start as visited
-		ArrayList<Vertex> startArray = new ArrayList<Vertex>();
-		startArray.add(start);
-
-		ArrayList<ArrayList<Vertex>> distSets = new ArrayList<ArrayList<Vertex>>(); //Store all levels
-		distSets.add(startArray);
-
-		ArrayList<Vertex> currentNeighbours = start.getAdj();	//Get level 1 (level 0 is the original vertex)
-
-		int numVisited = 1;	//Number of visited vertices
-
-		while (numVisited < this.getSize()) {
-			distSets.add(currentNeighbours);	//Store current level
-
-			for (Vertex v: currentNeighbours) { v.setVisited(); }	//Set current level as visited
-			numVisited += currentNeighbours.size();
-			
-			HashSet<Vertex> nextNeighbours = new HashSet<Vertex>();	//Get all vertices on next level
-
-			for (Vertex v: currentNeighbours) {
-				for (Vertex n: v.getAdj()) {
-					if (!n.getVisited()) { nextNeighbours.add(n); }
-				}
-			}
-
-			currentNeighbours = new ArrayList<Vertex>();
-			currentNeighbours.addAll(nextNeighbours);
-		}
-
-		for (ArrayList<Vertex> a: distSets) { System.out.println(a); }
-		System.out.println("\n");
-
-		int   k          = 0;	//Number of vertices in levels 0 through l1
-		int   levelIndex = 0;	//Used to index position in distSet
-
-		int L0Index = 0;
-		int L1Index = 0;
-		int L2Index = 0;
-
-		for (float totalCost = 0; totalCost < 0.5; ) {	//Find L1Index
-			ArrayList<Vertex> currentSet = distSets.get(levelIndex++);
-			totalCost += ((float) currentSet.size()) / (float) this.vertList.size();
-			k         += currentSet.size();
-		}
-
-		L1Index = levelIndex - 1;
-
-		for (L0Index = L1Index - 1; L0Index >= 0; L0Index--) {
-			ArrayList<Vertex> currentSet = distSets.get(L0Index);
-
-			float L1Cost = (float) distSets.get(L1Index).size() / (float) this.vertList.size();
-			float L0Cost = (float) currentSet.size()            / (float) this.vertList.size();
-
-			if (currentSet.size() + (2 * (L1Cost - L0Cost)) <= 2 * Math.sqrt(k)) { break; }
-		}
-
-		for (L2Index = L1Index + 1; L1Index < distSets.size(); L2Index++) {
-			ArrayList<Vertex> currentSet = distSets.get(L2Index);
-
-			float L1Cost = (float) distSets.get(L1Index).size() / (float) this.vertList.size();
-			float L2Cost = (float) currentSet.size()            / (float) this.vertList.size();
-
-			if (currentSet.size() + (2 * (L2Cost - L1Cost - 1)) <= 2 * Math.sqrt(this.vertList.size() - k)) { break; }
-		}
-
-		ArrayList<Vertex> A = new ArrayList<Vertex>();
-		ArrayList<Vertex> B = new ArrayList<Vertex>();
-		ArrayList<Vertex> C = new ArrayList<Vertex>();
-
-		if (distSets.get(L1Index).size() >= distSets.get(L2Index).size()) {
-			for (int i = 0; i < L1Index; i++)                   { A.addAll(distSets.get(i)); }
-			for (int i = L1Index + 1; i < distSets.size(); i++) { B.addAll(distSets.get(i)); }
-			C = distSets.get(L1Index);
-
-		} else {
-			ArrayList<Vertex> firstPart  = new ArrayList<Vertex>();
-			ArrayList<Vertex> middlePart = new ArrayList<Vertex>();
-			ArrayList<Vertex> endPart    = new ArrayList<Vertex>();
-
-			for (int i = 0; i < L1Index; i++)                   { firstPart.addAll(distSets.get(i));  }
-			for (int i = L1Index + 1; i < L2Index; i++)         { middlePart.addAll(distSets.get(i)); }
-			for (int i = L2Index + 1; i < distSets.size(); i++) { endPart.addAll(distSets.get(i));    }
-
-			if ((float) middlePart.size() / (float) this.vertList.size() <= 2.0 / 3.0) {
-				A = firstPart;
-				B.addAll(middlePart);
-				B.addAll(endPart);
-
-				if (middlePart.size() > A.size()) {
-					A = middlePart;
-					B = firstPart;
-					B.addAll(endPart);
-
-				} else if (endPart.size() > A.size()) {
-					A = endPart;
-					B = firstPart;
-					B.addAll(middlePart);
-
-				}
-
-				C.addAll(distSets.get(L1Index));
-				C.addAll(distSets.get(L2Index));
-
-			} else {
-				System.out.println("TBC");
-			}
-
-		}
-
-		System.out.println("A: " + A);
-		System.out.println("B: " + B);
-		System.out.println("C: " + C);
-
-		System.out.println("Graph size: " + this.vertList.size());
-		System.out.println("A size: " + ((float) A.size() / (float) this.getSize()));
-		System.out.println("B size: " + ((float) B.size() / (float) this.getSize()));
-		System.out.println("C size: " + ((float) C.size() / (float) this.getSize()));
 	}
 
 }
