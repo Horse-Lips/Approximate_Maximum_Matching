@@ -12,7 +12,7 @@ import java.util.HashSet;
 public class Main {
     
     public static void main(String[] args) throws IOException {
-        Graph g = General.fromSNAPFile("Graphs/example.txt");
+        Graph g = General.fromSNAPFile("Graphs/exampleBlossom.txt");
 
 		//g.starReduction();
 		//g.degreeReduction();

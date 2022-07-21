@@ -15,8 +15,9 @@ public class Vertex {
 	public ArrayList<Vertex>			  grouping;		//Vertices that this vertex is grouped with after degree reduction
 
 	private boolean matched;	//true if this vertex is in M and false otherwise
-	private boolean startVert;	//true if this vertex is at the start of the augmenting path
 	private boolean visited;	//true if this vertex has been visited
+	public  boolean inner;
+	public  boolean outer;
 	private Vertex  partner;	//Vertex that this Vertex is matched with
 	private Vertex  pred;		//Previous vertex in augmenting path
 
@@ -86,24 +87,8 @@ public class Vertex {
 	/** Sets matched to the boolean value given */
 	public void setMatched(boolean b) { 
 		this.matched = b;
-		
 		if (!b) { this.partner = null; }
-
-		for (Vertex v: this.grouping) {
-			if (!v.isMatched()) { v.setMatched(b); }
-		}
-	}
-
-
-	/** Returns the value of starVert */
-	public boolean isStart() {
-		return this.startVert;
-	}
-
-
-	/** Sets the value of starVert to the given boolean value */
-	public void setStart(boolean b) {
-		this.startVert = b;
+		for (Vertex v: this.grouping) { if (!v.isMatched()) { v.setMatched(b); } }
 	}
 
 
@@ -116,27 +101,19 @@ public class Vertex {
 
 
 	/** Returns the value of visited */
-	public boolean getVisited() {
-		return this.visited;
-	}
+	public boolean getVisited() { return this.visited; }
 
 
 	/** Update the value of visited to the given boolean value */
-	public void setVisited(boolean b) {
-		this.visited = b;
-	}
+	public void setVisited(boolean b) { this.visited = b; }
 
 	
 	/** Returns the predecessor in the path */
-	public Vertex getPred() {
-		return this.pred;
-	}
+	public Vertex getPred() { return this.pred; }
 
 
 	/** Updates the predecessor in the path */
-	public void setPred(Vertex v) {
-		this.pred = v;
-	}
+	public void setPred(Vertex v) { this.pred = v; }
 
 
     @Override

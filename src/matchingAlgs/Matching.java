@@ -15,57 +15,83 @@ public class Matching {
 		}
 	}
 
+
 	/** Find an augmenting path in G */
 	public static Vertex findAug(Graph g) {
+		ArrayList<Vertex> q = new ArrayList<Vertex>();
+
 		for (int i = 0; i < g.getSize(); i++) {
 			Vertex currentVert = g.getVertex(i);
 
-			currentVert.setStart(false);
-			currentVert.setVisited(false);
-		}
+			if (!currentVert.isMatched()) {
+				currentVert.setVisited(false);
+				q.add(currentVert);
 
-
-		for (int i = 0; i < g.getSize(); i++) {
-			Vertex currentRoot = g.getVertex(i);
-
-			if (currentRoot.isMatched() || currentRoot.getVisited()) { continue; }
-
-			ArrayList<Vertex> forest = new ArrayList<Vertex>();
-			forest.add(currentRoot);
-			currentRoot.setStart(true);
-
-			while (!forest.isEmpty()) {
-				Vertex currentVert = forest.remove(0);
+			} else {
 				currentVert.setVisited(true);
 
-				for (Vertex currentNeighb: currentVert.getAdj()) {
-					if (!currentNeighb.getVisited() && !currentNeighb.isMatched() && !currentVert.grouping.contains(currentNeighb)) {
-						currentNeighb.setVisited(true);
-						currentNeighb.setPred(currentVert);
+			}
+		}
 
-						if (currentNeighb.getPartner() == null) {
-							return currentNeighb;
+		while (!q.isEmpty()) {
+			Vertex currentRoot = q.remove(0);
 
-						} else {
-							forest.add(currentNeighb.getPartner());
-						}
+			if (getDist(currentRoot) % 2 != 0) { continue; }
+
+			for (Vertex currentNeighb: currentRoot.getAdj()) {
+				if (currentNeighb.isMatched()) {
+					currentNeighb.getPartner().setPred(currentNeighb);
+					currentNeighb.setPred(currentRoot);
+
+					q.add(currentNeighb);
+
+				} else {
+					if (getDist(currentNeighb) % 2 != 0) { continue; }
+
+					Vertex temp;
+
+					while ((temp = currentNeighb.getPred()) != null) {
+						currentNeighb.setPred(currentRoot);
+
+						currentRoot   = currentNeighb;
+						currentNeighb = temp;
 					}
-				}
 
-				
+					if (currentNeighb != null) { currentNeighb.setPred(currentRoot); }
+
+					return currentNeighb;
+				}
 			}
 		}
 
 		return null;
 	}
 
-	
+
+	/** Returns the root vertex from a given end vertex */
+	public static Vertex getRoot(Vertex endVert) {
+		System.out.println(endVert.getPred());
+		while (endVert.getPred() != null) { endVert = endVert.getPred(); }
+
+		return endVert;
+	}
+
+
+	/** Returns the distance from a given end vertex to its root in the path */
+	public static int getDist(Vertex endVert) {
+		int i;
+		for (i = 0; endVert.getPred() != null; i++, endVert = endVert.getPred());
+
+		return i;
+	}
+
+
 	/** Augment M along an augmenting path starting from the end vertex */
 	public static void augment(Vertex endVert) {
 		Vertex pred = endVert.getPred();
 		Vertex temp;
 
-		while (!pred.isStart()) {
+		while (pred.getPred() != null) {
 			temp = pred.getPartner();
 
 			endVert.setPartner(pred);
@@ -86,3 +112,47 @@ public class Matching {
 	}
 
 } 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
