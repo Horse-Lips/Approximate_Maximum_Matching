@@ -116,6 +116,20 @@ public class Vertex {
 	public void setPred(Vertex v) { this.pred = v; }
 
 
+	/** Set this vertex to be marked as outer */
+	public void setOuter() {
+		inner = false;
+		outer = true;
+	}
+
+	
+	/** Set this vertex to be marked as inner */
+	public void setInner() {
+		inner = true;
+		outer = false;
+	}
+
+
     @Override
     public boolean equals(Object o) {
         if (o == this) {

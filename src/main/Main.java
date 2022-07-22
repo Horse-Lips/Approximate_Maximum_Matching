@@ -41,6 +41,52 @@ public class Main {
 		}
 
 		System.out.println("Matching size: " + matchingSize / 2);
+
+
+		/* Testing to check aug path lengths */
+		/*for (int i = 0; i < g.getSize(); i++) {
+			Vertex currentVert = g.getVertex(i);
+			String path = "";
+
+			while (currentVert != null) {
+				path = "," + currentVert.getID() + path;
+				currentVert = currentVert.getPred(); 
+			}
+
+			System.out.println(path);
+		}*/
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
