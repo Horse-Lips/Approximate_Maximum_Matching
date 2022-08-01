@@ -3,211 +3,118 @@ package matchingAlgs;
 
 import graphComponents.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class Matching {
 	/** Find the maximum matching in the graph */
 	public static void maxMatch(Graph g) {
-		Vertex endAug;
-		
-		while ((endAug = findAug(g)) != null) {
-			augment(endAug);
+		while (findAug(g));
+	}
+
+
+	/** Class used to store vertex information */
+	static class VertInfo {
+		public Vertex  parent;		//Vertex' parent in augmenting path
+		public Vertex  treeRoot;	//Root of the augmenting path
+		public boolean outer;		//Whether or not the vertex is outer
+
+		public VertInfo(Vertex parent, Vertex treeRoot, boolean outer) {
+			this.parent   = parent;
+			this.treeRoot = treeRoot;
+			this.outer    = outer;
+		}
+	}
+
+
+	/** Class used to represent an edge between two vertices */
+	static class Edge {
+		public Vertex v;	//Vertex at one end of edge
+		public Vertex w;	//Vertex at other end of edge
+
+		public Edge(Vertex v, Vertex w) {
+			this.v = v;
+			this.w = w;
 		}
 	}
 
 
 	/** Find an augmenting path in G */
-	public static Vertex findAug(Graph g) {
-		ArrayList<Vertex> q = new ArrayList<Vertex>();
+	public static boolean findAug(Graph g) {
+		HashMap<Vertex, VertInfo> F = new HashMap<Vertex, VertInfo>();	//Augmenting path forest
+		ArrayList<Edge>           q = new ArrayList<Edge>();			//Edges to expand
 
-		/* Unmark all vertices in G and mark all vertices in M */
-		for (int i = 0; i < g.getSize(); i++) {
-			Vertex currentVert = g.getVertex(i);
+		// Add all unmatched vertices to forest with VertInfo and edges to the queue
+		for (Vertex v: g.vertList) {
+			if (v.matched) { continue; }
 
-			if (!currentVert.isMatched()) {
-				currentVert.setVisited(false);
-				q.add(currentVert);
+			for (Vertex w: v.adjList) {
+				if (!v.grouping.contains(w)) {
+					F.put(v, new VertInfo(null, v, true));
+					q.add(new Edge(v, w));
 
-			} else {
-				currentVert.setVisited(true);
-
+				}
 			}
 		}
 
 
-		while (!q.isEmpty()) {
-			Vertex currentRoot = q.remove(0);
+		while (!q.isEmpty()) {	//While there is an unmarked edge (v, w)
+
+			Edge e = q.remove(0);
+			VertInfo vInfo = F.get(e.v);
+			VertInfo wInfo = F.get(e.w);
+
+			if (wInfo != null) {	//We have VertInfo for the neighbour, so it is unmatched
+				if (wInfo.outer && wInfo.treeRoot == vInfo.treeRoot) {	//v and w share a root, potential blossom
+					System.out.println("Blossom found: (" + e.w.id + "," + e.v.id + ") Roots: " + wInfo.treeRoot + "," + vInfo.treeRoot);
+
+					ArrayList<Vertex> path = new ArrayList<Vertex>();
+
+					for (Vertex u1 = e.v; u1 != null; u1 = F.get(u1).parent) { path.add(0, u1); }
+					for (Vertex u2 = e.w; u2 != null; u2 = F.get(u2).parent) { path.add(u2);    }
+
+					return augment(path);
+
+				} else if (wInfo.outer && wInfo.treeRoot != vInfo.treeRoot) {	//No shared root, augmenting path
+					ArrayList<Vertex> path = new ArrayList<Vertex>();
+
+					for (Vertex u1 = e.v; u1 != null; u1 = F.get(u1).parent) { path.add(0, u1); }
+					for (Vertex u2 = e.w; u2 != null; u2 = F.get(u2).parent) { path.add(u2);    }
+
+					return augment(path);
+
+				}
+
+			} else if (e.w.partner != null) {	//No VertInfo so w is matched
+				F.put(e.w,         new VertInfo(e.v, vInfo.treeRoot, false));				
+				F.put(e.w.partner, new VertInfo(e.w, vInfo.treeRoot, true ));
+
+				for (Vertex u: e.w.partner.adjList) { q.add(new Edge(e.w.partner, u)); }
+
+			}
+
 			
-			/* While there is an unmarked vertex in G with dist(v, root(v)) even */
-			if (getDist(currentRoot) % 2 != 0 && !currentRoot.getVisited()) { continue; }
-
-			currentRoot.setOuter();
-
-			for (Vertex currentNeighb: currentRoot.getAdj()) {
-				/* While there exists an unmarked edge (v, w) */
-				
-				if (currentRoot.outer && currentNeighb.outer) {
-					System.out.println("Blossom found on edge (" + currentRoot.getID() + "," + currentNeighb.getID() + ")");
-					findCycle(currentRoot, currentNeighb);
-					return contract(currentRoot, currentNeighb);
-				}
-
-				if (currentNeighb.isMatched()) {	//w is not in F (q) (its matched)
-					currentRoot.setPred(currentNeighb);
-					tracePath(currentRoot);
-
-				} else {
-					if (getDist(currentNeighb) % 2 == 0) { //If dist (w, root(w)) is even then do stuff
-						if (currentRoot.outer && currentNeighb.outer) {
-							System.out.println("Blossom detected");
-
-						} else {
-							Vertex temp;
-
-							while ((temp = currentNeighb.getPred()) != null) {
-								if (currentRoot.inner) { currentNeighb.setOuter(); }
-								if (currentRoot.outer) { currentNeighb.setInner(); }
-
-								currentNeighb.setPred(currentRoot);
-
-								currentRoot   = currentNeighb;
-								currentNeighb = temp;
-							}
-
-							if (currentNeighb != null) {
-								currentNeighb.setPred(currentRoot); 
-
-								if (currentNeighb.getPred().inner) { currentNeighb.setOuter(); }
-								if (currentNeighb.getPred().outer) { currentNeighb.setInner(); }
-							}
-
-							return currentNeighb;
-
-						}
-					}
-
-
-					if (currentNeighb.outer && currentRoot.outer) { 
-						System.out.println("Blossom found at edge (" + 
-										   currentRoot.getID() + "," + 
-										   currentNeighb.getID() + ")");
-
-						findCycle(currentRoot, currentNeighb);
-						//contract(currentRoot, currentNeighb);
-					}
-				}
-
-			currentRoot.setVisited(true);
-			}
 		}
 
-		return null;
-	}
-
-
-	/** Traces the path from a given end vertex to the start, prints in order */
-	public static void tracePath(Vertex endVert) {
-		String path        = "";
-
-		while (endVert != null) {
-			path = "," + endVert.getID() + path;
-			endVert = endVert.getPred();
-		}
-
-		System.out.println(path);
-	}
-
-
-	/** Returns the root vertex from a given end vertex */
-	public static Vertex getRoot(Vertex endVert) {
-		while (endVert.getPred() != null) { endVert = endVert.getPred(); }
-
-		return endVert;
-	}
-
-
-	/** Returns the distance from a given end vertex to its root in the path */
-	public static int getDist(Vertex endVert) {
-		int i;
-		for (i = 0; endVert.getPred() != null; i++, endVert = endVert.getPred());
-
-		return i;
+		return false;
 	}
 
 
 	/** Augment M along an augmenting path starting from the end vertex */
-	public static void augment(Vertex endVert) {
-		while (endVert != null && endVert.getPred() != null) {
-			Vertex pred = endVert.getPred();
+	public static boolean augment(ArrayList<Vertex> path) {
+		int i = 0;
 
-			endVert.setPartner(pred);
-			pred.setPartner(endVert);
-
-			endVert.setMatched(true);
-			pred.setMatched(true);
-
-			endVert = pred.getPred();
-		}
-	}
-
-
-	/** Helper function for finding the start of a cycle and setting pred of a root */
-	public static void findCycle(Vertex endVert, Vertex startVert) {
-		for (Vertex v: endVert.getAdj()) {
-			if (v == startVert) { continue; }
-			Vertex currentVert = v;
-
-			while (currentVert.getPred() != null) {
-				if (currentVert == startVert) {
-					endVert.setPred(v);
-					return;
-				}
-
-				currentVert = currentVert.getPred();
-			}
-		}
-	}
-
-
-	/** Given the end vert of a path and its neighbour representing the final edge in a cycle, contract blossom */
-	public static Vertex contract(Vertex endVert, Vertex startVert) {
-		Vertex blossom = endVert;
-		Vertex ret     = endVert;
-
-		while (blossom.getPred() != startVert) { blossom = blossom.getPred(); }
-
-		ArrayList<Vertex> blossomAdj = blossom.getAdj();
-
-		/* Begin contracting edges around the cycle until we reach the start */
-		while (endVert != blossom) {
-			ArrayList<Vertex> toRemove = new ArrayList<Vertex>();
-
-			for (Vertex v: endVert.getAdj()) {
-				if (v == startVert) { v.removeFromAdj(startVert); startVert.removeFromAdj(v); }
-				if (v == blossom)   { v.removeFromAdj(blossom);   blossom.removeFromAdj(v);    }
-
-				if (v != endVert.getPred()) { 
-					toRemove.add(v);
-					v.removeFromAdj(endVert);
-
-					if (!blossomAdj.contains(v)) { blossomAdj.add(v); }}
-			}
-
-			for (Vertex v: toRemove) { endVert.removeFromAdj(v); }
-
-			if (endVert.getPred() == blossom) {
-				endVert.setPred(null);
-				endVert = blossom;
-
-			} else {
-				endVert = endVert.getPred();
-			
-			}
+		while (i < path.size()) {
+			path.get(i).partner     = path.get(i + 1);
+			path.get(i + 1).partner = path.get(i);
+			i += 2;
 		}
 
-		endVert.setVisited(true);
-		return endVert;
+		for (Vertex v: path) { v.setMatched(); }
+
+		return true;
 	}
+
 } 
 
 

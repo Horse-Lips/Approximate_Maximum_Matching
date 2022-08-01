@@ -12,10 +12,10 @@ import java.util.HashSet;
 public class Main {
     
     public static void main(String[] args) throws IOException {
-        Graph g = General.fromSNAPFile("Graphs/exampleBlossom.txt");
+        Graph g = General.fromSNAPFile("Graphs/example.txt");
 
-		//g.starReduction();
-		//g.degreeReduction();
+		g.starReduction();
+		g.degreeReduction();
 
 		Matching.maxMatch(g);
 
@@ -24,23 +24,26 @@ public class Main {
 		for (int i = 0; i < g.getSize(); i++) { 
 			Vertex currentVert = g.getVertex(i);
 
-			if (currentVert.getPartner() == null) {
-				if (currentVert.isMatched()) {
-					System.out.println("Vertex " + currentVert.getID() + " is unmatched BUT MARKED!");
+			if (currentVert.partner == null) {
+				if (currentVert.matched) {
+					System.out.println("Vertex " + currentVert.id + " is unmatched BUT MARKED!");
 
 				} else {
-					System.out.println("Vertex " + currentVert.getID() + " is unmatched!"); 
+					System.out.println("Vertex " + currentVert.id + " is unmatched!"); 
 
 				}
 
-			} else {
-				System.out.println("(" + currentVert.getID() + "," + currentVert.getPartner().getID() + ")");
+			} else if (!currentVert.visited) {
+				System.out.println("(" + currentVert.id + "," + currentVert.partner.id + ")");
+				
+				currentVert.visited = true;
+				currentVert.partner.visited = true;
 
 				matchingSize++;
 			}
 		}
 
-		System.out.println("Matching size: " + matchingSize / 2);
+		System.out.println("Matching size: " + matchingSize);
 
 
 		/* Testing to check aug path lengths */

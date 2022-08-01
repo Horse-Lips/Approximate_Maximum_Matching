@@ -9,8 +9,8 @@ import graphUtils.SimpleQueuePrio;
 
 public class Graph {
 
-    private ArrayList<Vertex> vertList;         //List of all Vertex objects in the graph
-    private int               currentVertID;	//ID of next Vertex to be added to the graph
+    public ArrayList<Vertex> vertList;         //List of all Vertex objects in the graph
+    public int               currentVertID;	//ID of next Vertex to be added to the graph
 
     public Graph(int graphSize) {
         this.vertList = new ArrayList<Vertex>();
@@ -107,11 +107,11 @@ public class Graph {
         for (Vertex v: this.vertList) { v.clearTokens(); }  		//Clear all tokens
 
         for (Vertex v: this.vertList) {
-			Vertex[] neighbs = {v.getAdj().get(0), v.getAdj().get(0)};	//Get first neighbour twice
+			Vertex[] neighbs = {v.adjList.get(0), v.adjList.get(0)};	//Get first neighbour twice
 
 			/* Ignore all non-2-stars and non-3-double-stars */
 			if (v.getDegree() == 1 && neighbs[0].getDegree() < 2) { continue; }
-			if (v.getDegree() == 2 && (neighbs[0].getDegree() < 3 || (neighbs[1] = v.getAdj().get(1)).getDegree() < 3)) { continue; }
+			if (v.getDegree() == 2 && (neighbs[0].getDegree() < 3 || (neighbs[1] = v.adjList.get(1)).getDegree() < 3)) { continue; }
 			if (v.getDegree() > 2) { continue; }
 
 			SimpleTuple<Vertex> token = new SimpleTuple<Vertex>(neighbs[0], neighbs[1]);  //Create token on neighbs

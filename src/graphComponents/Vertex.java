@@ -8,52 +8,42 @@ import graphUtils.SimpleTuple;
 
 public class Vertex {
 
-    private int id; //ID of the vertex
+    public int id; //ID of the vertex
 
-    private ArrayList<Vertex>             adjListVert;  //List of all vertices adjacent to this one
-    private HashMap<SimpleTuple, Integer> tokens;       //Tokens received from other vertices (in star removal)
-	public ArrayList<Vertex>			  grouping;		//Vertices that this vertex is grouped with after degree reduction
+    public ArrayList<Vertex>             adjList; //List of all vertices adjacent to this one
+    public HashMap<SimpleTuple, Integer> tokens;      //Tokens received from other vertices (in star removal)
+	public ArrayList<Vertex>			 grouping;	  //Vertices this vertex is grouped with after degree reduction
 
-	private boolean matched;	//true if this vertex is in M and false otherwise
-	private boolean visited;	//true if this vertex has been visited
-	public  boolean inner;
-	public  boolean outer;
-	private Vertex  partner;	//Vertex that this Vertex is matched with
-	private Vertex  pred;		//Previous vertex in augmenting path
+	public boolean matched;	//true if this vertex is in M and false otherwise
+	public Vertex  partner;	//Vertex that this Vertex is matched with
+
+	public boolean visited;	//true if vertex has been visited
 
     public Vertex(int vertID) {
         this.id          = vertID;
-        this.adjListVert = new ArrayList<Vertex>();
+        this.adjList = new ArrayList<Vertex>();
         this.tokens      = new HashMap<SimpleTuple, Integer>();
 		this.grouping	 = new ArrayList<Vertex>();
 
 		this.matched = false;
 		this.partner = null;
     }
-
-
-    /** Return the ID of the vertex */
-    public int getID() { return this.id;}
-
-
-    /** Return the entire adjacency list hashmap */
-	public ArrayList<Vertex> getAdj() { return this.adjListVert; }
 	
 
 	/** Add an edge between this vertex and another specified vertex */
-	public void addToAdj(Vertex v, double weight) { this.adjListVert.add(v); }
+	public void addToAdj(Vertex v, double weight) { this.adjList.add(v); }
 	
 	
 	/** Removes an edge from this vertex to the specified vertex */
-	public boolean removeFromAdj(Vertex v) { return this.adjListVert.remove(v); }
+	public boolean removeFromAdj(Vertex v) { return this.adjList.remove(v); }
 
 
 	/** Removes an edge from this vertex based on index in the adjacency list */
-	public Vertex removeFromAdj(int i) { return this.adjListVert.remove(i); }
+	public Vertex removeFromAdj(int i) { return this.adjList.remove(i); }
 
 
     /** Return the degree of the vertex */
-    public int getDegree() { return this.adjListVert.size(); }
+    public int getDegree() { return this.adjList.size(); }
 
 
     /** Get the value of a specific token from the hashmap */
@@ -80,53 +70,10 @@ public class Vertex {
 	public void addToGrouping(Vertex v) { this.grouping.add(v); }
 
 
-	/** Returns the value of matched */
-	public boolean isMatched() { return this.matched; }
-
-
 	/** Sets matched to the boolean value given */
-	public void setMatched(boolean b) { 
-		this.matched = b;
-		if (!b) { this.partner = null; }
-		for (Vertex v: this.grouping) { if (!v.isMatched()) { v.setMatched(b); } }
-	}
-
-
-	/** Returns the partner of this vertex */
-	public Vertex getPartner() { return this.partner; }
-
-
-	/** Updates the partner of this vertex */
-	public void setPartner(Vertex v) { this.partner = v; }
-
-
-	/** Returns the value of visited */
-	public boolean getVisited() { return this.visited; }
-
-
-	/** Update the value of visited to the given boolean value */
-	public void setVisited(boolean b) { this.visited = b; }
-
-	
-	/** Returns the predecessor in the path */
-	public Vertex getPred() { return this.pred; }
-
-
-	/** Updates the predecessor in the path */
-	public void setPred(Vertex v) { this.pred = v; }
-
-
-	/** Set this vertex to be marked as outer */
-	public void setOuter() {
-		inner = false;
-		outer = true;
-	}
-
-	
-	/** Set this vertex to be marked as inner */
-	public void setInner() {
-		inner = true;
-		outer = false;
+	public void setMatched() { 
+		this.matched = true;
+		for (Vertex v: this.grouping) { if (!v.matched) { v.matched = true; } }
 	}
 
 
@@ -142,7 +89,7 @@ public class Vertex {
 
         Vertex v = (Vertex) o;
 
-        if (v.getID() == this.getID()) {
+        if (v.id == this.id) {
             return true;
         }
 
@@ -151,6 +98,6 @@ public class Vertex {
 
 
 	@Override
-	public String toString() { return Integer.toString(this.getID()); }
+	public String toString() { return Integer.toString(this.id); }
 
 }
