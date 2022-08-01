@@ -4,9 +4,9 @@ package main;
 import graphComponents.*;
 import graphUtils.*;
 import matchingAlgs.*;
+import reductions.*;
 import java.io.IOException;
-import java.util.Objects;
-import java.util.HashSet;
+import java.util.*;
 
 
 public class Main {
@@ -14,10 +14,11 @@ public class Main {
     public static void main(String[] args) throws IOException {
         Graph g = General.fromSNAPFile("Graphs/example.txt");
 
-		g.starReduction();
-		g.degreeReduction();
+		StarReduction.reduce(g);
+		DegreeReduction.reduce(g);
+		
 
-		Matching.maxMatch(g);
+		/*Matching.maxMatch(g);
 
 		int matchingSize = 0;
 		
@@ -43,21 +44,7 @@ public class Main {
 			}
 		}
 
-		System.out.println("Matching size: " + matchingSize);
-
-
-		/* Testing to check aug path lengths */
-		/*for (int i = 0; i < g.getSize(); i++) {
-			Vertex currentVert = g.getVertex(i);
-			String path = "";
-
-			while (currentVert != null) {
-				path = "," + currentVert.getID() + path;
-				currentVert = currentVert.getPred(); 
-			}
-
-			System.out.println(path);
-		}*/
+		System.out.println("Matching size: " + matchingSize);*/
     }
 
 }

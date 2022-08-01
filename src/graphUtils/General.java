@@ -1,71 +1,41 @@
 package graphUtils;
 
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Scanner;
-import java.util.HashMap;
-
-import graphComponents.Graph;
-import graphComponents.Vertex;
+import graphComponents.*;
+import java.util.*;
+import java.io.*;
 
 
 public class General {
 	public static Graph fromSNAPFile(String filename) throws IOException {
-		BufferedReader br = new BufferedReader(new FileReader(filename));
-		Scanner lineScanner = new Scanner(br);
-				
-		lineScanner.nextLine();	//Skip header
-		lineScanner.nextLine();
+		Scanner lineScanner = new Scanner(new BufferedReader(new FileReader(filename)));
+		lineScanner.nextLine(); lineScanner.nextLine(); lineScanner.nextLine(); lineScanner.nextLine();
+
+		Graph g = new Graph();	//Create Graph
+
+		HashMap<Integer, ArrayList<Integer>> converter = new HashMap<Integer, ArrayList<Integer>>();
 		
-		int graphSize = Integer.parseInt(lineScanner.nextLine().split("\t")[0].split(":")[1]);	//Get size of graph
-		Graph newGraph = new Graph(graphSize);	//Create Graph
-		
-		lineScanner.nextLine();
-		
-		HashMap<Integer, Integer> converter = new HashMap<Integer, Integer>();
-		
-		int graphIndex = 0;
-		int currentIndex;
+		int gIndex = -1;
+		int prev   = -1;
 		
 		while (lineScanner.hasNextLine()) {
-			currentIndex = Integer.parseInt(lineScanner.nextLine().split("\t")[0]);
+			String[] line = lineScanner.nextLine().split("\t");
+			int curr = Integer.parseInt(line[0]);
 			
-			if (!converter.containsKey(currentIndex)) {
-				converter.put(currentIndex, graphIndex);
-				
-				graphIndex++;
-			}
+			if (curr != prev) { gIndex++; prev = curr; }
+			if (!converter.containsKey(gIndex)) { converter.put(gIndex, new ArrayList<Integer>()); }
+			converter.get(gIndex).add(Integer.parseInt(line[1]));
 			
 		}
 		
 		lineScanner.close();
-		
-		br = new BufferedReader(new FileReader(filename));
-		lineScanner = new Scanner(br);
-		
-		lineScanner.nextLine();
-		lineScanner.nextLine();
-		lineScanner.nextLine();
-		lineScanner.nextLine();
-		
-		while (lineScanner.hasNextLine()) {
-			String[] splitLine = lineScanner.nextLine().split("\t");
-			
-			int from = converter.get(Integer.parseInt(splitLine[0]));
-			int to   = converter.get(Integer.parseInt(splitLine[1]));
-			
-			int weight = 1;
-			
-			if (from != to) {
-                newGraph.getVertex(from).addToAdj(newGraph.getVertex(to), weight);
-			}
-			
+
+		for (int i = 0; i < gIndex + 1; i++) {
+			Vertex v = new Vertex(i);
+			v.adjList = converter.get(i);
+			g.vertList.add(v);
 		}
 		
-		lineScanner.close();
-		
-		return newGraph;
+		return g;
 	}
 }

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-javac -client main/Main.java graphComponents/Graph.java graphComponents/Vertex.java graphUtils/General.java graphUtils/SimpleTuple.java graphUtils/SimpleQueuePrio.java matchingAlgs/Matching.java && java main.Main
+javac -client main/*.java graphComponents/*.java graphUtils/*.java matchingAlgs/*.java reductions/*.java && java main.Main
