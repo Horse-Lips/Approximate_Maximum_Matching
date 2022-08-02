@@ -11,9 +11,9 @@ public class Matching {
 	/** Find the maximum matching in the graph */
 	public static void maxMatch(Graph g, HashMap<Integer, ArrayList<Integer>> vertGroups) {
 		grouping = vertGroups;
-		ArrayList<Vertex> path;
+		ArrayList<Integer> path;
 
-		while ((path = findAug(g)) != null) { System.out.println(path); augment(path); }
+		while ((path = findAug(g)) != null) { System.out.println(path); augment(path, g); }
 	}
 
 
@@ -115,7 +115,7 @@ public class Matching {
 
 
 	/** Augment M along an augmenting path starting from the end vertex */
-	public static boolean augment(ArrayList<Integer> path) {
+	public static boolean augment(ArrayList<Integer> path, Graph g) {
 		int i = 0;
 
 		while (i < path.size()) {
@@ -124,20 +124,20 @@ public class Matching {
 			i += 2;
 		}
 
-		for (Integer i: path) { g.vertList.get(i).setMatched(); }
+		for (Integer j: path) { g.vertList.get(j).matched = true; }
 
 		return true;
 	}
 
 	
 	/** Given an edge in a graph, trace backwards to find the blossom it is a part of */
-	public static Blossom findBlossom(Edge e, HashMap<Vertex, VertInfo> F) {
+	public static Blossom findBlossom(Edge e, HashMap<Integer, VertInfo> F) {
 		/*Find the root which is the lowest common ancestor of the two nodes*/
-		ArrayList<Vertex> pathV = new ArrayList<Vertex>();
-		ArrayList<Vertex> pathW = new ArrayList<Vertex>();
+		ArrayList<Integer> pathV = new ArrayList<Integer>();
+		ArrayList<Integer> pathW = new ArrayList<Integer>();
 
-		for (Vertex v = e.v; v != null; v = F.get(v).parent) { pathV.add(0, v); }
-		for (Vertex w = e.w; w != null; w = F.get(w).parent) { pathW.add(0, w); }
+		for (Integer v = e.v; v != null; v = F.get(v).parent) { pathV.add(0, v); }
+		for (Integer w = e.w; w != null; w = F.get(w).parent) { pathW.add(0, w); }
 
 		int misMatch = 0;
 
@@ -146,7 +146,7 @@ public class Matching {
 		}
 
 		/* Now we are able to recover the cycle using the index of the mismatch */
-		ArrayList<Vertex> cycle = new ArrayList<Vertex>();
+		ArrayList<Integer> cycle = new ArrayList<Integer>();
 
 		for (int i = misMatch - 1; i < pathV.size(); i++) { cycle.add(pathV.get(i)); }
 		for (int i = pathW.size() - 1; i >= misMatch; i--) { cycle.add(pathW.get(i)); }
@@ -157,22 +157,20 @@ public class Matching {
 
 	/** Contract a blossom in a graph */
 	public static Graph contract(Graph gOld, Blossom b) {
-		Graph gNew = new Graph(gOld.getSize());
-		Vertex newRoot = gNew.vertList.get(b.root.id);
+		Graph gNew = new Graph();
+		Vertex newRoot = gNew.vertList.get(b.root);
 
 		for (Vertex vOld: gOld.vertList) {
-			if (!b.cycle.contains(vOld)) {
+			if (!b.cycle.contains(vOld.id)) {
 				Vertex vNew = gNew.vertList.get(vOld.id);
 
-				for (Vertex wOld: vOld.adjList) {
-					Vertex wNew = gNew.vertList.get(wOld.id);
-
+				for (Integer wOld: vOld.adjList) {
 					if (!b.cycle.contains(wOld)) {
-						vNew.adjList.add(wNew);
+						vNew.adjList.add(wOld);
 
 					} else {
-						vNew.adjList.add(newRoot);
-						newRoot.adjList.add(vNew);
+						vNew.adjList.add(b.root);
+						gNew.vertList.get(b.root).adjList.add(vNew.id);
 
 					}
 				}
@@ -184,9 +182,9 @@ public class Matching {
 
 	
 	/** Expand a path found in a contracted blossom to the original graph */
-	public static ArrayList<Vertex> expand(ArrayList<Vertex> path, Graph g, HashMap<Vertex, VertInfo> F, Blossom b) {
+	public static ArrayList<Integer> expand(ArrayList<Integer> path, Graph g, HashMap<Integer, VertInfo> F, Blossom b) {
 		int index = -1;
-		for (int i = 0; i < path.size(); i++) { if (g.getVertex(i).id == b.root.id) { index = i; } }
+		for (int i = 0; i < path.size(); i++) { if (g.vertList.get(i).id == b.root) { index = i; } }
 
 		if (index == -1) { return path; }
 		
