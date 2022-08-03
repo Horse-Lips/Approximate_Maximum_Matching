@@ -42,8 +42,8 @@ public class DegreeReduction {
 
 
 				/* STEP 2: Get first two neighbours of v, u1 and u2, and remove edges between them */
-				Vertex u1 = g.vertList.get(v.adjList.remove(0));
-				Vertex u2 = g.vertList.get(v.adjList.remove(0));
+				Vertex u1 = g.get(v.adjList.remove(0));
+				Vertex u2 = g.get(v.adjList.remove(0));
 
 				u1.adjList.remove((Integer) v.id); u2.adjList.remove((Integer) v.id);
 
@@ -51,7 +51,10 @@ public class DegreeReduction {
 				u1.adjList.add(v2.id); u2.adjList.add(v2.id); v2.adjList.add(u1.id); v2.adjList.add(u2.id);
 			}
 
-			grouping.put(v.id, newGroup);	//Create entry for grouping
+			newGroup.add(v.id);
+
+			for (Integer i: newGroup) { grouping.put(i, newGroup); }
+			
 		}
 
 		g.vertList.addAll(vertsToAdd);	//Add all new vertices to the graph

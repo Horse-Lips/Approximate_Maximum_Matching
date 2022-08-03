@@ -17,9 +17,9 @@ public class StarReduction {
 		for (Vertex v: g.vertList) {
 			if (v.degree() > 2) { continue; }	//Only send tokens from verts of degree 1 or 2
 
-			Vertex[] U = {g.vertList.get(v.adjList.get(0)), g.vertList.get(v.adjList.get(0))};	//Get first neighbour twice
+			Vertex[] U = {g.get(v.adjList.get(0)), g.get(v.adjList.get(0))};	//Get first neighbour twice
 
-			if ((v.degree() == 1 && U[0].degree() < 2) || (v.degree() == 2 && (U[0].degree() < 3 || (U[1] = g.vertList.get(v.adjList.get(1))).degree() < 3))) { continue; }	//Ignore non-2- and non-3-stars
+			if ((v.degree() == 1 && U[0].degree() < 2) || (v.degree() == 2 && (U[0].degree() < 3 || (U[1] = g.get(v.adjList.get(1))).degree() < 3))) { continue; }	//Ignore non-2- and non-3-stars
 
 			SimpleTuple<Vertex> token = new SimpleTuple<Vertex>(U[0], U[1]);	//Create token from neighbours
 
@@ -44,9 +44,9 @@ public class StarReduction {
 		}
 
 		g.vertList.removeAll(vertsToRemove);
-		for (int i = 0; i < g.size(); i++) { g.vertList.get(i).id = i; }	//Correct any missing IDs
+		for (int i = 0; i < g.size(); i++) { g.get(i).id = i; }	//Correct any missing IDs
 
-		System.out.println("Resulting graph size: " + g.vertList.size() + "\n");
+		System.out.println("Resulting graph size: " + g.size() + "\n");
 	}
 }
 

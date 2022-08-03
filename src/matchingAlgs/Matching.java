@@ -7,13 +7,13 @@ import java.util.*;	//ArrayList, HashMap
 
 public class Matching {
 	static HashMap<Integer, ArrayList<Integer>> grouping;
-
+	
 	/** Find the maximum matching in the graph */
 	public static void maxMatch(Graph g, HashMap<Integer, ArrayList<Integer>> vertGroups) {
 		grouping = vertGroups;
 		ArrayList<Integer> path;
 
-		while ((path = findAug(g)) != null) { System.out.println(path); augment(path, g); }
+		while ((path = findAug(g)) != null) { augment(path, g); }
 	}
 
 
@@ -63,9 +63,11 @@ public class Matching {
 		// Add all unmatched vertices to forest with VertInfo and edges to the queue
 		for (Vertex v: g.vertList) {
 			if (v.matched) { continue; }
+			
+			ArrayList<Integer> vGrouping = grouping.get(v.id);
 
 			for (Integer w: v.adjList) {
-				if (!grouping.get(v.id).contains(w)) {
+				if (vGrouping == null || !vGrouping.contains(w)) {
 					F.put(v.id, new VertInfo(null, v.id, true));
 					q.add(new Edge(v.id, w));
 				}
@@ -81,8 +83,6 @@ public class Matching {
 
 			if (wInfo != null) {	//We have VertInfo for the neighbour, so it is unmatched
 				if (wInfo.outer && wInfo.treeRoot == vInfo.treeRoot) {	//v and w share a root, potential blossom
-					System.out.println("Blossom found:("+e.v+","+e.w+")Roots:"+vInfo.treeRoot+","+wInfo.treeRoot);
-
 					Blossom b = findBlossom(e, F);
 					ArrayList<Integer> path = findAug(contract(g, b));
 
@@ -99,13 +99,13 @@ public class Matching {
 
 				}
 
-			} else if (g.vertList.get(e.w).partner != null) {	//No VertInfo so w matched (null if grouped)
-				Vertex w = g.vertList.get(e.w);
+			} else if (g.get(e.w).partner != null) {	//No VertInfo so w matched (null if grouped)
+				Vertex w = g.get(e.w);
 
 				F.put(e.w,       new VertInfo(e.v, vInfo.treeRoot, false));				
 				F.put(w.partner, new VertInfo(e.w, vInfo.treeRoot, true ));
 
-				for (Integer u: g.vertList.get(w.partner).adjList) { q.add(new Edge(w.partner, u)); }
+				for (Integer u: g.get(w.partner).adjList) { q.add(new Edge(w.partner, u)); }
 
 			}
 		}
@@ -119,12 +119,18 @@ public class Matching {
 		int i = 0;
 
 		while (i < path.size()) {
-			g.vertList.get(path.get(i)).partner     = path.get(i + 1);
-			g.vertList.get(path.get(i + 1)).partner = path.get(i);
+			g.get(path.get(i)).partner     = path.get(i + 1);
+			g.get(path.get(i + 1)).partner = path.get(i);
 			i += 2;
 		}
 
-		for (Integer j: path) { g.vertList.get(j).matched = true; }
+		for (Integer j: path) {
+			g.get(j).matched = true;
+
+			ArrayList<Integer> jGroup = grouping.get(j);
+
+			if (jGroup != null) { for (Integer k: jGroup) { g.get(k).matched =  true; }} 
+		}
 
 		return true;
 	}
@@ -150,7 +156,7 @@ public class Matching {
 
 		for (int i = misMatch - 1; i < pathV.size(); i++) { cycle.add(pathV.get(i)); }
 		for (int i = pathW.size() - 1; i >= misMatch; i--) { cycle.add(pathW.get(i)); }
-		
+
 		return new Blossom(pathV.get(misMatch - 1), cycle);
 	}
 
@@ -158,11 +164,11 @@ public class Matching {
 	/** Contract a blossom in a graph */
 	public static Graph contract(Graph gOld, Blossom b) {
 		Graph gNew = new Graph();
-		Vertex newRoot = gNew.vertList.get(b.root);
+		Vertex newRoot = gNew.get(b.root);
 
 		for (Vertex vOld: gOld.vertList) {
 			if (!b.cycle.contains(vOld.id)) {
-				Vertex vNew = gNew.vertList.get(vOld.id);
+				Vertex vNew = gNew.get(vOld.id);
 
 				for (Integer wOld: vOld.adjList) {
 					if (!b.cycle.contains(wOld)) {
@@ -183,13 +189,48 @@ public class Matching {
 	
 	/** Expand a path found in a contracted blossom to the original graph */
 	public static ArrayList<Integer> expand(ArrayList<Integer> path, Graph g, HashMap<Integer, VertInfo> F, Blossom b) {
-		int index = -1;
-		for (int i = 0; i < path.size(); i++) { if (g.vertList.get(i).id == b.root) { index = i; } }
+		int index = path.indexOf(b.root);
 
-		if (index == -1) { return path; }
+		if (index == -1) { return path; }	//The path is fine if the root doesn't appear
 		
-		return null;
+		//Make sure index is even
+		if (index % 2 != 0) { Collections.reverse(path); index = path.indexOf(b.root); }
+		
+
+		ArrayList<Integer> newPath = new ArrayList<Integer>();
+		
+		for (int i = 0; i < path.size(); i++) {
+			if (path.get(i) != b.root) {
+				newPath.add(path.get(i));
+
+			} else {
+				newPath.add(b.root);
+
+				int outVert = findVert(g, b, path.get(i + 1));
+				int outInd  = b.cycle.indexOf(outVert);
+
+				int start = b.cycle.size();
+				int step  = -1;
+
+				if (outInd % 2 == 0) { start = 1; step = 1; }
+
+				for (int j = start; j != outInd + step; j += step) { newPath.add(b.cycle.get(j)); }
+			}
+		}
+
+		return newPath;
 	}
+
+	
+	/** Given a node and a blossom, find a node in the blossom that has an edge to the given node */
+	public static int findVert(Graph g, Blossom b, int vInd) {
+		for (int bInd: b.cycle) {
+			if (g.get(vInd).adjList.contains(bInd)) { return bInd; }
+		}
+
+		return -1;
+	}
+
 }
 
 

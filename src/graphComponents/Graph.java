@@ -16,4 +16,8 @@ public class Graph {
     /** Return the number of vertices in the graph */
     public int size() { return this.vertList.size(); }
 
+
+	/** Return the vertex at the given index in the vertList */
+	public Vertex get(int i) { return this.vertList.get(i); }
+
 }

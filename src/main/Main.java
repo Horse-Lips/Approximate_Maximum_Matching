@@ -15,36 +15,24 @@ public class Main {
         Graph g = General.fromSNAPFile("Graphs/example.txt");
 
 		StarReduction.reduce(g);
-		DegreeReduction.reduce(g);
-		
+		HashMap<Integer, ArrayList<Integer>> groupings = DegreeReduction.reduce(g);
 
-		/*Matching.maxMatch(g);
+		Matching.maxMatch(g, groupings);
 
 		int matchingSize = 0;
 		
-		for (int i = 0; i < g.getSize(); i++) { 
-			Vertex currentVert = g.getVertex(i);
-
-			if (currentVert.partner == null) {
-				if (currentVert.matched) {
-					System.out.println("Vertex " + currentVert.id + " is unmatched BUT MARKED!");
-
-				} else {
-					System.out.println("Vertex " + currentVert.id + " is unmatched!"); 
-
-				}
-
-			} else if (!currentVert.visited) {
-				System.out.println("(" + currentVert.id + "," + currentVert.partner.id + ")");
+		for (Vertex v: g.vertList) { 
+			if (!v.visited && v.partner != null) {
+				System.out.println("(" + v.id + "," + v.partner + ")");
 				
-				currentVert.visited = true;
-				currentVert.partner.visited = true;
+				v.visited = true;
+				g.get(v.partner).visited = true;
 
 				matchingSize++;
 			}
 		}
 
-		System.out.println("Matching size: " + matchingSize);*/
+		System.out.println("Matching size: " + matchingSize);
     }
 
 }
