@@ -38,15 +38,31 @@ public class StarReduction {
 
 			/* This vertex creates a k- or k-double- star so remove its edges */
 			if (tokens.get(U[0]).get(token) > 2 && tokens.get(U[1]).get(token) > 2) {
-				U[0].adjList.remove(v); U[1].adjList.remove(v);
+				for (int i: v.adjList) { g.get(i).adjList.remove((Integer) v.id); }
 				vertsToRemove.add(v);	//Mark v as to-be-removed
 			}
 		}
 
 		g.vertList.removeAll(vertsToRemove);
-		for (int i = 0; i < g.size(); i++) { g.get(i).id = i; }	//Correct any missing IDs
+		correct(g);
 
 		System.out.println("Resulting graph size: " + g.size() + "\n");
+	}
+
+
+	/** Correct vertex IDs and any references to those vertices */
+	public static void correct(Graph g) {
+		HashMap<Integer, Integer> converter = new HashMap<Integer, Integer>();
+
+		for (int i = 0; i < g.size(); i++) { converter.put(g.get(i).id, i); }
+
+		for (Vertex v: g.vertList) {
+			ArrayList<Integer> newAdj = new ArrayList<Integer>();
+
+			for (Integer i: v.adjList) { newAdj.add(converter.get(i)); }
+			v.adjList = newAdj;
+			v.id      = converter.get(v.id);
+		}
 	}
 }
 

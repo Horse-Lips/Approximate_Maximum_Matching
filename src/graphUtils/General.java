@@ -11,28 +11,43 @@ public class General {
 		Scanner lineScanner = new Scanner(new BufferedReader(new FileReader(filename)));
 		lineScanner.nextLine(); lineScanner.nextLine(); lineScanner.nextLine(); lineScanner.nextLine();
 
-		Graph g = new Graph();	//Create Graph
+		HashMap<Integer, Integer> converter = new HashMap<Integer, Integer>();		
 
-		HashMap<Integer, ArrayList<Integer>> converter = new HashMap<Integer, ArrayList<Integer>>();
-		
 		int gIndex = -1;
-		int prev   = -1;
+		int prev = -1;
+
+		while (lineScanner.hasNextLine()) {
+			int curr = Integer.parseInt(lineScanner.nextLine().split("\t")[0]);
+
+			if (curr != prev) { prev = curr; gIndex++; converter.put(prev, gIndex); }
+		}
+
+		lineScanner.close();
+
+		lineScanner = new Scanner(new BufferedReader(new FileReader(filename)));
+		lineScanner.nextLine(); lineScanner.nextLine(); lineScanner.nextLine(); lineScanner.nextLine();
+
+		Graph g = new Graph();	//Create Graph
+		HashMap<Integer, ArrayList<Integer>> graphMap = new HashMap<Integer, ArrayList<Integer>>();
 		
 		while (lineScanner.hasNextLine()) {
 			String[] line = lineScanner.nextLine().split("\t");
-			int curr = Integer.parseInt(line[0]);
+
+			int from = converter.get(Integer.parseInt(line[0]));
+			int to   = converter.get(Integer.parseInt(line[1]));
 			
-			if (curr != prev) { gIndex++; prev = curr; }
-			if (!converter.containsKey(gIndex)) { converter.put(gIndex, new ArrayList<Integer>()); }
-			converter.get(gIndex).add(Integer.parseInt(line[1]));
+			if (from == to) { continue; }
+
+			if (!graphMap.containsKey(from)) { graphMap.put(from, new ArrayList<Integer>()); }
+			graphMap.get(from).add(to);
 			
 		}
 		
 		lineScanner.close();
 
-		for (int i = 0; i < gIndex + 1; i++) {
+		for (int i = 0; i < graphMap.size(); i++) {
 			Vertex v = new Vertex(i);
-			v.adjList = converter.get(i);
+			v.adjList = graphMap.get(i);
 			g.vertList.add(v);
 		}
 		

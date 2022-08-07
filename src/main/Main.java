@@ -12,13 +12,13 @@ import java.util.*;
 public class Main {
     
     public static void main(String[] args) throws IOException {
-        Graph g = General.fromSNAPFile("Graphs/example.txt");
+        Graph g = General.fromSNAPFile("Graphs/3KAS.txt");
 
 		StarReduction.reduce(g);
 		HashMap<Integer, ArrayList<Integer>> groupings = DegreeReduction.reduce(g);
 
 		Matching.maxMatch(g, groupings);
-
+		//Matching.maxMatch(g, new HashMap<Integer, ArrayList<Integer>>());
 		int matchingSize = 0;
 		
 		for (Vertex v: g.vertList) { 

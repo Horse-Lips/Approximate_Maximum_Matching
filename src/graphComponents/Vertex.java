@@ -37,13 +37,10 @@ public class Vertex {
         } else if (!(o instanceof Vertex)) {
             return false;
 
-        }
+        } else if (((Vertex) o).id == this.id) {
+			return true;
 
-        Vertex v = (Vertex) o;
-
-        if (v.id == this.id) {
-            return true;
-        }
+		}
 
         return false;
     }

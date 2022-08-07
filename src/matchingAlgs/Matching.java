@@ -62,13 +62,14 @@ public class Matching {
 
 		// Add all unmatched vertices to forest with VertInfo and edges to the queue
 		for (Vertex v: g.vertList) {
-			if (v.matched) { continue; }
+			if (v.matched || v.adjList == null) { continue; }
 			
 			ArrayList<Integer> vGrouping = grouping.get(v.id);
 
+			F.put(v.id, new VertInfo(null, v.id, true));
+
 			for (Integer w: v.adjList) {
 				if (vGrouping == null || !vGrouping.contains(w)) {
-					F.put(v.id, new VertInfo(null, v.id, true));
 					q.add(new Edge(v.id, w));
 				}
 			}
@@ -78,14 +79,17 @@ public class Matching {
 		while (!q.isEmpty()) {	//While there is an unmarked edge (v, w)
 
 			Edge e = q.remove(0);
+
+			if (g.get(e.v).partner == e.w || g.get(e.w).partner == e.v) { continue; }
+
 			VertInfo vInfo = F.get(e.v);
 			VertInfo wInfo = F.get(e.w);
 
 			if (wInfo != null) {	//We have VertInfo for the neighbour, so it is unmatched
 				if (wInfo.outer && wInfo.treeRoot == vInfo.treeRoot) {	//v and w share a root, potential blossom
-					Blossom b = findBlossom(e, F);
+					Blossom b = findBlossom(e, F);;
 					ArrayList<Integer> path = findAug(contract(g, b));
-
+					
 					if (path == null) { return null; }
 					return expand(path, g, F, b);
 
@@ -164,19 +168,37 @@ public class Matching {
 	/** Contract a blossom in a graph */
 	public static Graph contract(Graph gOld, Blossom b) {
 		Graph gNew = new Graph();
+		for (int i = 0; i < gOld.size(); i++) { gNew.vertList.add(new Vertex(i)); }
+
 		Vertex newRoot = gNew.get(b.root);
 
 		for (Vertex vOld: gOld.vertList) {
 			if (!b.cycle.contains(vOld.id)) {
 				Vertex vNew = gNew.get(vOld.id);
 
+				if (vOld.partner != null) {
+					if (b.cycle.contains(vOld.partner)) {
+						vNew.partner    = b.root;	vNew.matched    = true;
+						newRoot.partner = vNew.id;	newRoot.matched = true;
+
+					} else {
+						vNew.partner = vOld.partner;				vNew.matched                   = true;
+						gNew.get(vNew.partner).partner = vNew.id;	gNew.get(vNew.partner).matched = true;
+
+					}
+
+				} else if (vOld.matched && vOld.partner == null) {
+					gNew.get(vOld.id).matched = true;
+
+				}
+				
 				for (Integer wOld: vOld.adjList) {
 					if (!b.cycle.contains(wOld)) {
 						vNew.adjList.add(wOld);
 
 					} else {
 						vNew.adjList.add(b.root);
-						gNew.vertList.get(b.root).adjList.add(vNew.id);
+						newRoot.adjList.add(vNew.id);
 
 					}
 				}
