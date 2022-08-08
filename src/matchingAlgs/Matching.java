@@ -158,10 +158,17 @@ public class Matching {
 		/* Now we are able to recover the cycle using the index of the mismatch */
 		ArrayList<Integer> cycle = new ArrayList<Integer>();
 
-		for (int i = misMatch - 1; i < pathV.size(); i++) { cycle.add(pathV.get(i)); }
+		if (misMatch != 0) {
+			for (int i = misMatch - 1; i < pathV.size(); i++) { cycle.add(pathV.get(i)); }
+		}
+
 		for (int i = pathW.size() - 1; i >= misMatch; i--) { cycle.add(pathW.get(i)); }
 
-		return new Blossom(pathV.get(misMatch - 1), cycle);
+		if (misMatch != 0) {
+			return new Blossom(pathV.get(misMatch - 1), cycle);
+		}
+
+		return new Blossom(pathV.get(0), cycle);
 	}
 
 
@@ -253,48 +260,39 @@ public class Matching {
 		return -1;
 	}
 
+
+	/** Prints out the maximum matching */
+	public static void printMatching(Graph g) {
+		int matchingSize = 0;
+		
+		for (Vertex v: g.vertList) { 
+			if (!v.visited && v.partner != null) {
+				System.out.println("(" + v.id + "," + v.partner + ")");
+				
+				v.visited = true;
+				g.get(v.partner).visited = true;
+
+				matchingSize++;
+			}
+		}
+
+		System.out.println("Matching size: " + matchingSize);
+	}
+
+	
+	/** Prints the size of the matching */
+	public static int matchingSize(Graph g) {
+		int matchingSize = 0;
+
+		for (Vertex v: g.vertList) { 
+			if (!v.visited && v.partner != null) {
+				v.visited = true;
+				g.get(v.partner).visited = true;
+
+				matchingSize++;
+			}
+		}
+
+		return matchingSize;
+	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
